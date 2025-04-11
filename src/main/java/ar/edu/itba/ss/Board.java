@@ -1,28 +1,21 @@
 package ar.edu.itba.ss;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Board {
-    private final long width;
-    private final long height;
+    private final double radius;
+    private final Set<Particle> particles = new HashSet<>();
 
-    private final List<Particle> particles = new ArrayList<>();
-
-    public Board(long width, long height) {
-        this.width = width;
-        this.height = height;
+    public Board(long L) {
+        this.radius = (double)L/2;
     }
 
-    public long getWidth() {
-        return width;
+    public double getRadius() {
+        return radius;
     }
 
-    public long getHeight() {
-        return height;
-    }
-
-    public List<Particle> getParticles() {
+    public Set<Particle> getParticles() {
         return particles;
     }
 }
