@@ -1,11 +1,8 @@
 package ar.edu.itba.ss;
 
 
-import jdk.incubator.vector.VectorOperators;
-
 import java.io.FileWriter;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -25,7 +22,7 @@ public class ParticleGenerator {
         if (System.getProperty(BOARD_DIAMETER) == null){
             throw new RuntimeException("Missing required param: " + BOARD_DIAMETER);
         }
-        long boardDiameter = Long.parseLong(System.getProperty(BOARD_DIAMETER));
+        double boardDiameter = Double.parseDouble(System.getProperty(BOARD_DIAMETER));
 
         double obstacleRadius= 0;
         if (System.getProperty(OBSTACLE_RADIUS) != null){
@@ -59,10 +56,10 @@ public class ParticleGenerator {
 
         ParticleGenerator generator = new ParticleGenerator();
 
-        Set<Particle> particles = generator.generate(particleCount, speed, mass, radius, obstacleRadius, (double)boardDiameter/2);
+        Set<Particle> particles = generator.generate(particleCount, speed, mass, radius, obstacleRadius, boardDiameter/2);
 
         try (PrintWriter writer = new PrintWriter(new FileWriter(outPath))){
-            writer.println(String.format("%d", boardDiameter));
+            writer.println(String.format("%f", boardDiameter));
             writer.println(String.format("%f", obstacleRadius));
             for (Particle particle: particles){
                 writer.println(particle);
@@ -96,7 +93,7 @@ public class ParticleGenerator {
     public Set<Particle> generate(long count, double speed, double mass, double radius, double circleMin, double circleMax){
         Set<Particle> particles = new HashSet<>();
 
-        for (int id = 0; id < count; id++){
+        for (int id = 1; id <= count; id++){
             while(true){
                 Particle candidate = new Particle(id, randomPosition(circleMin, circleMax), null, mass, radius);
 
