@@ -49,4 +49,21 @@ public class Particle {
     public int hashCode() {
         return Objects.hashCode(id);
     }
+
+    public boolean isOverlapped(Particle other){
+        return position.distance(other.position) <= (radius + other.radius);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%d %f %f %f %f %f %f",
+            id,
+            position.getX(),
+            position.getY(),
+            velocity.getX(),
+            velocity.getY(),
+            mass,
+            radius
+        );
+    }
 }

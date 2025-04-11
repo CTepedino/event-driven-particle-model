@@ -11,6 +11,10 @@ public class Vector2D {
         this.y = y;
     }
 
+    public static Vector2D fromPolar(double magnitude, double angle){
+        return new Vector2D(magnitude * Math.cos(angle), magnitude * Math.sin(angle));
+    }
+
     public double getX() {
         return x;
     }
@@ -31,4 +35,7 @@ public class Vector2D {
         return Objects.hash(x, y);
     }
 
+    public double distance(Vector2D other){
+        return Math.sqrt(Math.pow(x-other.x, 2) + Math.pow(y-other.y, 2));
+    }
 }
