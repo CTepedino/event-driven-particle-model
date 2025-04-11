@@ -5,14 +5,22 @@ import java.util.Set;
 
 public class Board {
     private final double radius;
-    private final Set<Particle> particles = new HashSet<>();
+    private final double obstacleRadius;
 
-    public Board(long L) {
+    private final Set<Particle> particles;
+
+    public Board(long L, double obstacleRadius, Set<Particle> particles) {
         this.radius = (double)L/2;
+        this.obstacleRadius = obstacleRadius;
+        this.particles = particles;
     }
 
     public double getRadius() {
         return radius;
+    }
+
+    public double getObstacleRadius() {
+        return obstacleRadius;
     }
 
     public Set<Particle> getParticles() {
