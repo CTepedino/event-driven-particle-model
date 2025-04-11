@@ -5,8 +5,8 @@ import java.util.Objects;
 public class Particle {
     private final long id;
 
-    private final Vector2D position;
-    private final Vector2D velocity;
+    private Vector2D position;
+    private Vector2D velocity;
     private final double mass;
     private final double radius;
 
@@ -20,6 +20,14 @@ public class Particle {
 
     public long getId() {
         return id;
+    }
+
+    public void setPosition(Vector2D newPosition){
+        this.position = newPosition;
+    }
+
+    public void setVelocity(Vector2D newVelocity){
+        this.velocity = newVelocity;
     }
 
     public Vector2D getPosition() {
