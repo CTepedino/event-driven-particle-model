@@ -47,4 +47,8 @@ public class Simulation {
 
         return new Board(boardDiameter, obstacleRadius, particles);
     }
+
+    public void execute(){
+
+    }
 }
