@@ -9,8 +9,8 @@ public class Board {
 
     private final Set<Particle> particles;
 
-    public Board(long L, double obstacleRadius, Set<Particle> particles) {
-        this.radius = (double)L/2;
+    public Board(double L, double obstacleRadius, Set<Particle> particles) {
+        this.radius = L/2;
         this.obstacleRadius = obstacleRadius;
         this.particles = particles;
     }

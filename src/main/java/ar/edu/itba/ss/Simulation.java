@@ -9,7 +9,9 @@ import java.util.stream.Stream;
 
 public class Simulation {
     public static void main(String[] args){
+        Board board = new Simulation().parseParticlesFile(args[0]);
 
+        System.out.println("hello");
     }
 
     /**
@@ -21,11 +23,11 @@ public class Simulation {
      */
     public Board parseParticlesFile(String particleFileName){
         Set<Particle> particles = new HashSet<>();
-        long boardDiameter = 0;
+        double boardDiameter = 0;
         double obstacleRadius = 0;
 
         try (BufferedReader particlesReader = Files.newBufferedReader(Path.of(particleFileName))){
-            boardDiameter = Long.parseLong(particlesReader.readLine());
+            boardDiameter = Double.parseDouble(particlesReader.readLine());
             obstacleRadius = Double.parseDouble(particlesReader.readLine());
             Stream<String> lines = particlesReader.lines();
             lines.skip(2).forEach(line -> {
@@ -42,7 +44,7 @@ public class Simulation {
 
             lines.close();
         } catch (Exception e){
-            throw new RuntimeException("Error reading input file: " + particleFileName);
+            throw new RuntimeException(e.getMessage());
         }
 
         return new Board(boardDiameter, obstacleRadius, particles);
