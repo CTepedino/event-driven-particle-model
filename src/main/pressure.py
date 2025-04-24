@@ -61,20 +61,20 @@ def read_output_file(output_file):
     return events
 
 def calculate_pressure(events, particles, board_diameter, obstacle_radius):
-    """Calculates pressure on walls and obstacle over time, ignoring particle-particle collisions."""
+    """Calculates instantaneous pressure on walls and obstacle over time."""
     wall_circumference = math.pi * board_diameter  # Circumference of the circular container
     obstacle_circumference = 2 * math.pi * obstacle_radius
     pressures_wall = []
     pressures_obstacle = []
     times = []
     
-    for i in range(1, len(events)):  # Start from the second event to calculate delta_t
+    for i in range(len(events) - 1):  # Stop at the second-to-last event to access the next event
         event = events[i]
-        prev_event = events[i - 1]
-        delta_t = event['time'] - prev_event['time']
+        next_event = events[i + 1]  # Get the next event for velocities after collision
+        delta_t = next_event['time'] - event['time']  # Use the next event's time for delta_t
         impulse_wall = 0
         impulse_obstacle = 0
-        
+
         for collision in event['collisions']:
             particle_id = int(collision[0])
             collision_type = collision[1]
@@ -87,19 +87,32 @@ def calculate_pressure(events, particles, board_diameter, obstacle_radius):
             mass = particle['mass']
             
             # Find velocity before and after collision
-            prev_velocity = next(p for p in prev_event['particle_states'] if p['id'] == particle_id)
-            curr_velocity = next(p for p in event['particle_states'] if p['id'] == particle_id)
+            try:
+                # Velocity before collision from the current event
+                particle_state = next(p for p in event['particle_states'] if p['id'] == particle_id)
+                vx_before = particle_state['vx']
+                vy_before = particle_state['vy']
+                
+                # Velocity after collision from the next event
+                next_particle_state = next(p for p in next_event['particle_states'] if p['id'] == particle_id)
+                vx_after = next_particle_state['vx']
+                vy_after = next_particle_state['vy']
+            except (StopIteration, IndexError):
+                continue
             
-            delta_vx = curr_velocity['vx'] - prev_velocity['vx']
-            delta_vy = curr_velocity['vy'] - prev_velocity['vy']
+            # Calculate velocity differences
+            delta_vx = vx_after - vx_before
+            delta_vy = vy_after - vy_before
+
+            # Calculate impulse
             impulse = mass * ((delta_vx**2 + delta_vy**2)**0.5)
-            
+
             if collision_type == 'W':  # Wall collision
                 impulse_wall += impulse
             elif collision_type == 'O':  # Obstacle collision
                 impulse_obstacle += impulse
         
-        # Calculate pressures
+        # Calculate pressures for this interval
         pressure_wall = impulse_wall / (delta_t * wall_circumference) if delta_t > 0 else 0
         pressure_obstacle = impulse_obstacle / (delta_t * obstacle_circumference) if delta_t > 0 else 0
         
