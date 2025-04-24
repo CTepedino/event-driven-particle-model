@@ -1,5 +1,6 @@
 package ar.edu.itba.ss;
 
+import java.util.Locale;
 import java.util.Objects;
 
 public class Particle {
@@ -64,7 +65,7 @@ public class Particle {
 
     @Override
     public String toString() {
-        return String.format("%d %f %f %f %f %f %f",
+        return String.format(Locale.US,"%d %f %f %f %f %f %f",
             id,
             position.getX(),
             position.getY(),

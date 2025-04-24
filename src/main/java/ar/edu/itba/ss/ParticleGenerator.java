@@ -4,6 +4,7 @@ package ar.edu.itba.ss;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 
@@ -59,8 +60,8 @@ public class ParticleGenerator {
         Set<Particle> particles = generator.generate(particleCount, speed, mass, radius, obstacleRadius, boardDiameter/2);
 
         try (PrintWriter writer = new PrintWriter(new FileWriter(outPath))){
-            writer.println(String.format("%f", boardDiameter));
-            writer.println(String.format("%f", obstacleRadius));
+            writer.println(String.format(Locale.US,"%f", boardDiameter));
+            writer.println(String.format(Locale.US,"%f", obstacleRadius));
             for (Particle particle: particles){
                 writer.println(particle);
             }
