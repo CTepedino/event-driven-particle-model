@@ -36,28 +36,24 @@ public class Board {
         double B = 2 * (particle.getPosition().getX() * particle.getVelocity().getX() + particle.getPosition().getY() * particle.getVelocity().getY());
         double C = Math.pow(particle.getPosition().getX(), 2) + Math.pow(particle.getPosition().getY(), 2) - Math.pow(radius - particle.getRadius(), 2);
 
-        if (A == 0){
-            return -1;
-        }
+        double EPS = 1e-12;
 
-        double discriminant = discriminant(A, B, C);
+        if (A < EPS) return -1;                // no motion
+        double disc = B*B - 4*A*C;
+        if (disc < 0 && disc > -EPS) disc = 0;
+        if (disc < 0) return -1;
 
-        if (discriminant < 0){
-            return -1;
-        }
-
-        double disc_sqrt = Math.sqrt(discriminant);
-
-        double sol_a = (-B + disc_sqrt)/(2*A);
-        double sol_b = (-B - disc_sqrt)/(2*A);
+        double sqrtD = Math.sqrt(disc);
+        double t1 = (-B + sqrtD) / (2*A);
+        double t2 = (-B - sqrtD) / (2*A);
 
         double result = -1;
-        if (sol_a > 0 && sol_b > 0) {
-            result = Math.min(sol_a, sol_b);
-        } else if (sol_a > 0) {
-            result = sol_a;
-        } else if (sol_b > 0) {
-            result = sol_b;
+        if (t1 > EPS && t2 > EPS) {
+            result = Math.min(t1, t2);
+        } else if (t1 > EPS) {
+            result = t1;
+        } else if (t2 > EPS) {
+            result = t2;
         }
         return result;
     }
@@ -70,28 +66,24 @@ public class Board {
         double B = 2 * (particle.getPosition().getX() * particle.getVelocity().getX() + particle.getPosition().getY() * particle.getVelocity().getY());
         double C = Math.pow(particle.getPosition().getX(), 2) + Math.pow(particle.getPosition().getY(), 2) - Math.pow(obstacleRadius + particle.getRadius(), 2);
 
-        if (A == 0){
-            return -1;
-        }
+        double EPS = 1e-12;
 
-        double discriminant = discriminant(A, B, C);
+        if (A < EPS) return -1;                // no motion
+        double disc = B*B - 4*A*C;
+        if (disc < 0 && disc > -EPS) disc = 0;
+        if (disc < 0) return -1;
 
-        if (discriminant < 0){
-            return -1;
-        }
-
-        double disc_sqrt = Math.sqrt(discriminant);
-
-        double sol_a = (-B + disc_sqrt)/(2*A);
-        double sol_b = (-B - disc_sqrt)/(2*A);
+        double sqrtD = Math.sqrt(disc);
+        double t1 = (-B + sqrtD) / (2*A);
+        double t2 = (-B - sqrtD) / (2*A);
 
         double result = -1;
-        if (sol_a > 0 && sol_b > 0) {
-            result = Math.min(sol_a, sol_b);
-        } else if (sol_a > 0) {
-            result = sol_a;
-        } else if (sol_b > 0) {
-            result = sol_b;
+        if (t1 > EPS && t2 > EPS) {
+            result = Math.min(t1, t2);
+        } else if (t1 > EPS) {
+            result = t1;
+        } else if (t2 > EPS) {
+            result = t2;
         }
         return result;
     }
@@ -109,28 +101,24 @@ public class Board {
         double B = 2 * (dx * dvx + dy * dvy);
         double C = Math.pow(dx, 2) + Math.pow(dy, 2) - Math.pow(sgm, 2);
 
-        if (A == 0){
-            return -1;
-        }
+        double EPS = 1e-12;
 
-        double discriminant = discriminant(A, B, C);
+        if (A < EPS) return -1;                // no motion
+        double disc = B*B - 4*A*C;
+        if (disc < 0 && disc > -EPS) disc = 0;
+        if (disc < 0) return -1;
 
-        if (discriminant < 0){
-            return -1;
-        }
-
-        double disc_sqrt = Math.sqrt(discriminant);
-
-        double sol_a = (-B + disc_sqrt)/(2*A);
-        double sol_b = (-B - disc_sqrt)/(2*A);
+        double sqrtD = Math.sqrt(disc);
+        double t1 = (-B + sqrtD) / (2*A);
+        double t2 = (-B - sqrtD) / (2*A);
 
         double result = -1;
-        if (sol_a > 0 && sol_b > 0) {
-            result = Math.min(sol_a, sol_b);
-        } else if (sol_a > 0) {
-            result = sol_a;
-        } else if (sol_b > 0) {
-            result = sol_b;
+        if (t1 > EPS && t2 > EPS) {
+            result = Math.min(t1, t2);
+        } else if (t1 > EPS) {
+            result = t1;
+        } else if (t2 > EPS) {
+            result = t2;
         }
         return result;
     }
