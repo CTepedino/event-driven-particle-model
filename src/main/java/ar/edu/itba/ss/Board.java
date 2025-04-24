@@ -1,5 +1,6 @@
 package ar.edu.itba.ss;
 
+import java.io.PrintWriter;
 import java.util.*;
 
 public class Board {
@@ -46,10 +47,19 @@ public class Board {
         }
 
         double disc_sqrt = Math.sqrt(discriminant);
-        return Math.min(
-                (-B + disc_sqrt)/(2*A),
-                (-B - disc_sqrt)/(2*A)
-        );
+
+        double sol_a = (-B + disc_sqrt)/(2*A);
+        double sol_b = (-B - disc_sqrt)/(2*A);
+
+        double result = -1;
+        if (sol_a > 0 && sol_b > 0) {
+            result = Math.min(sol_a, sol_b);
+        } else if (sol_a > 0) {
+            result = sol_a;
+        } else if (sol_b > 0) {
+            result = sol_b;
+        }
+        return result;
     }
 
     private double obstacleCollisionTime(Particle particle){
@@ -71,10 +81,19 @@ public class Board {
         }
 
         double disc_sqrt = Math.sqrt(discriminant);
-        return Math.min(
-                (-B + disc_sqrt)/(2*A),
-                (-B - disc_sqrt)/(2*A)
-        );
+
+        double sol_a = (-B + disc_sqrt)/(2*A);
+        double sol_b = (-B - disc_sqrt)/(2*A);
+
+        double result = -1;
+        if (sol_a > 0 && sol_b > 0) {
+            result = Math.min(sol_a, sol_b);
+        } else if (sol_a > 0) {
+            result = sol_a;
+        } else if (sol_b > 0) {
+            result = sol_b;
+        }
+        return result;
     }
 
     private double particlePairCollisionTime(Particle a, Particle b){
@@ -101,13 +120,22 @@ public class Board {
         }
 
         double disc_sqrt = Math.sqrt(discriminant);
-        return Math.min(
-                (-B + disc_sqrt)/(2*A),
-                (-B - disc_sqrt)/(2*A)
-        );
+
+        double sol_a = (-B + disc_sqrt)/(2*A);
+        double sol_b = (-B - disc_sqrt)/(2*A);
+
+        double result = -1;
+        if (sol_a > 0 && sol_b > 0) {
+            result = Math.min(sol_a, sol_b);
+        } else if (sol_a > 0) {
+            result = sol_a;
+        } else if (sol_b > 0) {
+            result = sol_b;
+        }
+        return result;
     }
 
-    public double toNextCollisionTime(double currentTime){
+    public double toNextCollisionTime(double currentTime, PrintWriter writer, boolean printCollisions){
         List<Collision> soonestPerParticle = new ArrayList<>();
 
         for (Particle particle: particles){
@@ -144,37 +172,25 @@ public class Board {
             particle.update(soonestCollisionTime);
         }
 
-        double epsilon = 1e-8;
         List<Collision> happeningNow = new ArrayList<>();
 
-        for (Particle particle : particles) {
-            double wallTime = boardCollisionTime(particle);
-            if (Math.abs(wallTime - soonestCollisionTime) < epsilon) {
-                happeningNow.add(Collision.withWall(particle, wallTime));
-            }
-
-            double obsTime = obstacleCollisionTime(particle);
-            if (Math.abs(obsTime - soonestCollisionTime) < epsilon) {
-                happeningNow.add(Collision.withObstacle(particle, obsTime));
-            }
-
-            for (Particle other : particles) {
-                if (particle.getId() < other.getId()) {
-                    double pairTime = particlePairCollisionTime(particle, other);
-                    if (Math.abs(pairTime - soonestCollisionTime) < epsilon) {
-                        happeningNow.add(new Collision(particle, other, pairTime));
-                    }
-                }
+        for (Collision collision: soonestPerParticle){
+            if (collision != null && Double.compare(collision.getTime(), soonestCollisionTime) == 0){
+                happeningNow.add(collision);
             }
         }
 
+        writer.println(happeningNow.size());
         for (Collision collision : happeningNow) {
             if (collision.withWall) {
                 collision.getA().bounceOffWall();
+                writer.println(String.format(Locale.US, "%d W", collision.getA().getId()));
             } else if (collision.withObstacle) {
                 collision.getA().bounceOffObstacle();
+                writer.println(String.format(Locale.US, "%d O", collision.getA().getId()));
             } else {
                 collision.getA().bounceOffParticle(collision.getB());
+                writer.println(String.format(Locale.US, "%d %d", collision.getA().getId(), collision.getB().getId()));
             }
         }
 

@@ -83,26 +83,10 @@ public class Particle {
     }
 
     public void bounceOffParticle(Particle other){
-        Vector2D deltaX = this.position.subtract(other.position);
-        Vector2D deltaV = this.velocity.subtract(other.velocity);
-        double distanceSquared = deltaX.dot(deltaX);
-
-        if (distanceSquared == 0) return;
-
-        double dotProduct = deltaV.dot(deltaX);
-        if (dotProduct >= 0) return;
-
-        double m1 = this.mass;
-        double m2 = other.mass;
-
-        double factor1 = (2 * m2 / (m1 + m2)) * (dotProduct / distanceSquared);
-        Vector2D newVel1 = this.velocity.subtract(deltaX.scale(factor1));
-
-        double factor2 = (2 * m1 / (m1 + m2)) * (-dotProduct / distanceSquared);
-        Vector2D newVel2 = other.velocity.add(deltaX.scale(factor2));
-
-        this.velocity = newVel1;
-        other.velocity = newVel2;
+        double sigma = radius + other.getRadius();
+        Vector2D deltaR = position.subtract(other.position);
+        Vector2D deltaV = velocity.subtract(other.velocity);
+        
     }
 
     @Override

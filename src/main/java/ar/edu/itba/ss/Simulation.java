@@ -15,12 +15,19 @@ import java.util.stream.Stream;
 public class Simulation {
     private static final String MAX_TIME = "maxTime";
     private static final String MAX_COLLISIONS = "maxCollisions";
+    private static final String PRINT_COLLISIONS = "printCollisions";
 
     private final Board board;
+    private final boolean printCollisions;
 
     public static void main(String[] args){
 
-        Simulation simulation = new Simulation(args[0]);
+        boolean printCollisions = false;
+        if (System.getProperty(PRINT_COLLISIONS) != null){
+            printCollisions = Boolean.parseBoolean(System.getProperty(PRINT_COLLISIONS));
+        }
+
+        Simulation simulation = new Simulation(args[0], printCollisions);
 
         Optional<Long> maxTime = Optional.empty();
         if (System.getProperty(MAX_TIME) != null){
@@ -40,8 +47,9 @@ public class Simulation {
         simulation.execute(maxTime, maxCollisions, outPath);
     }
 
-    public Simulation(String particleFileName){
+    public Simulation(String particleFileName, boolean printCollisions){
         board = parseParticlesFile(particleFileName);
+        this.printCollisions = printCollisions;
     }
 
     /**
@@ -93,7 +101,7 @@ public class Simulation {
                 writer.println(time);
                 writer.print(board);
 
-                time = board.toNextCollisionTime(time);
+                time = board.toNextCollisionTime(time, writer, printCollisions);
                 collisions++;
             }
 
