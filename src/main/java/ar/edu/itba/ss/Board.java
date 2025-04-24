@@ -168,17 +168,25 @@ public class Board {
             }
         }
 
-        writer.println(happeningNow.size());
+        if (printCollisions) {
+            writer.println(happeningNow.size());
+        }
         for (Collision collision : happeningNow) {
             if (collision.withWall) {
                 collision.getA().bounceOffWall();
-                writer.println(String.format(Locale.US, "%d W", collision.getA().getId()));
+                if (printCollisions){
+                    writer.println(String.format(Locale.US, "%d W", collision.getA().getId()));
+                }
             } else if (collision.withObstacle) {
                 collision.getA().bounceOffObstacle();
-                writer.println(String.format(Locale.US, "%d O", collision.getA().getId()));
+                if (printCollisions){
+                    writer.println(String.format(Locale.US, "%d O", collision.getA().getId()));
+                }
             } else {
                 collision.getA().bounceOffParticle(collision.getB());
-                writer.println(String.format(Locale.US, "%d %d", collision.getA().getId(), collision.getB().getId()));
+                if (printCollisions){
+                    writer.println(String.format(Locale.US, "%d %d", collision.getA().getId(), collision.getB().getId()));
+                }
             }
         }
 
