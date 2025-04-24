@@ -60,7 +60,7 @@ public class Simulation {
             boardDiameter = Double.parseDouble(particlesReader.readLine());
             obstacleRadius = Double.parseDouble(particlesReader.readLine());
             Stream<String> lines = particlesReader.lines();
-            lines.skip(2).forEach(line -> {
+            lines.forEach(line -> {
                     String[] info = line.split("[\t ]+");
                     particles.add( new Particle(
                         Long.parseLong(info[0]),
