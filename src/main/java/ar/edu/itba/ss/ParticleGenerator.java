@@ -94,7 +94,7 @@ public class ParticleGenerator {
     public Set<Particle> generate(long count, double speed, double mass, double radius, double circleMin, double circleMax){
         Set<Particle> particles = new HashSet<>();
 
-        for (int id = 0; id < count; id++){
+        for (int id = 0; id <= count; id++){
             while(true){
                 Particle candidate = new Particle(id, randomPosition(circleMin, circleMax), null, mass, radius);
 
