@@ -1,5 +1,6 @@
 package ar.edu.itba.ss;
 
+import java.io.PrintWriter;
 import java.util.*;
 
 public class Board {
@@ -107,7 +108,7 @@ public class Board {
         );
     }
 
-    public double toNextCollisionTime(double currentTime){
+    public double toNextCollisionTime(double currentTime, PrintWriter writer){
         List<Collision> soonestPerParticle = new ArrayList<>();
 
         for (Particle particle: particles){
@@ -168,6 +169,10 @@ public class Board {
             }
         }
 
+        if (!happeningNow.isEmpty()){
+            writer.println(String.format(Locale.US, "time: %f", currentTime+soonestCollisionTime));
+        }
+
         for (Collision collision : happeningNow) {
             if (collision.withWall) {
                 collision.getA().bounceOffWall();
@@ -175,6 +180,18 @@ public class Board {
                 collision.getA().bounceOffObstacle();
             } else {
                 collision.getA().bounceOffParticle(collision.getB());
+            }
+            Particle firstParticle = collision.getA();
+            writer.println(String.format(Locale.US, "%d %f %f", firstParticle.getId(),firstParticle.getVelocity().getX(), firstParticle.getVelocity().getY()));
+            if (!collision.withObstacle && !collision.withWall) {
+                Particle secondParticle = collision.getB();
+                writer.println(String.format(Locale.US, "%d %f %f", secondParticle.getId(), secondParticle.getVelocity().getX(), secondParticle.getVelocity().getY()));
+            }else{
+                if (collision.withObstacle){
+                    writer.println("obstacle");
+                }else{
+                    writer.println("wall");
+                }
             }
         }
 

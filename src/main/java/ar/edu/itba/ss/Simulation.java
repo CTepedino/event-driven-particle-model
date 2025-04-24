@@ -1,6 +1,8 @@
 package ar.edu.itba.ss;
 
 import java.io.BufferedReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -76,9 +78,13 @@ public class Simulation {
     public void execute(Optional<Long> maxTime, Optional<Long> maxCollisions){
         double time = 0;
         long collisions = 0;
-        while ((maxTime.isEmpty() || maxTime.get() > time) && (maxCollisions.isEmpty() || maxCollisions.get() > collisions)){
-            time = board.toNextCollisionTime(time);
-            collisions++;
+        try (PrintWriter writer = new PrintWriter(new FileWriter("events.txt"))) {
+            while ((maxTime.isEmpty() || maxTime.get() > time) && (maxCollisions.isEmpty() || maxCollisions.get() > collisions)) {
+                time = board.toNextCollisionTime(time, writer);
+                collisions++;
+            }
+        } catch (Exception e){
+            throw new RuntimeException(e.getMessage());
         }
     }
 }
