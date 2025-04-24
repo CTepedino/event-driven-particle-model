@@ -36,78 +36,43 @@ def read_simulation_events(filename):
         lines = f.readlines()
     
     events = []
-    i = 0
+    N = int(lines[0].strip())
+    i = 1
     events_per_time = {}
+
     
     while i < len(lines):
         line = lines[i].strip()
         
-        if line.startswith("time: "):
-            time = line.replace("time: ", "").strip()
-            time_str = str(time)
+        time_str = line
+        
+        if time_str not in events_per_time:
+            events_per_time[time_str] = []
             
-            if time_str not in events_per_time:
-                events_per_time[time_str] = []
-                
-            i += 1
+        i += 1
+        
+        for j in range(N):
+            particle_info = lines[i+j].strip().split()
             
-            while i < len(lines) - 1:
-                next_line = lines[i].strip()
-                if next_line.startswith("time: ") or not next_line:
-                    break
+            if len(particle_info) == 5:  
+                try:
+                    particle_id = int(particle_info[0])
+                    x = float(particle_info[1])
+                    y = float(particle_info[2])
+                    vx = float(particle_info[3])
+                    vy = float(particle_info[4])
                     
-                if i + 1 >= len(lines):
-                    break
-                
-                particle1_info = lines[i].strip().split()
-                particle2_info = lines[i + 1].strip().split()
-                
-                if len(particle2_info) == 1 and (particle2_info[0] == "wall" or particle2_info[0] == "obstacle"):
-                    if len(particle1_info) == 3:  
-                        try:
-                            particle_id = int(particle1_info[0])
-                            vx = float(particle1_info[1])
-                            vy = float(particle1_info[2])
-                            
-                            events_per_time[time_str].append({
-                                'time': time,
-                                'type': 'wall',
-                                'particle_id': particle_id,
-                                'vx': vx,
-                                'vy': vy,
-                                'border_type': particle2_info[0]
-                            })
-                        except ValueError:
-                            pass
-                    i += 2
-                elif len(particle1_info) == 3 and len(particle2_info) == 3:  
-                    try:
-                        particle1_id = int(particle1_info[0])
-                        vx1 = float(particle1_info[1])
-                        vy1 = float(particle1_info[2])
-                        particle2_id = int(particle2_info[0])
-                        vx2 = float(particle2_info[1])
-                        vy2 = float(particle2_info[2])
-                        events_per_time[time_str].append({
-                            'time': time,
-                            'type': 'particle',
-                            'particle1_id': particle1_id,
-                            'vx1': vx1,
-                            'vy1': vy1,
-                            'particle2_id': particle2_id,
-                            'vx2': vx2,
-                            'vy2': vy2
-                        })
-                    except ValueError:
-                        pass
-                    i += 2
-                else:
-                    # Skip malformed lines
-                    i += 1
-        else:
-            # Skip any other type of line and move to the next one
-            i += 1
-    
+                    events_per_time[time_str].append({
+                        'particle_id': particle_id,
+                        'x': x,
+                        'y': y,
+                        'vx': vx,
+                        'vy': vy,
+                    })
+                except ValueError:
+                    pass
+        i += N
+
     for time_str in events_per_time:
         if events_per_time[time_str]:  
             events.append({
@@ -115,15 +80,11 @@ def read_simulation_events(filename):
                 'events': events_per_time[time_str]
             })
     
-    events.sort(key=lambda x: float(x['time']))
-                
     return events
 
 def animate_particles(particles_file, events_file, output_file=None, show_animation=True, fps=500, min_frames_per_event=5):
     board_diameter, obstacle_radius, particles = read_initial_conditions(particles_file)
     events_data = read_simulation_events(events_file)
-    
-    current_time = 0.0
     
     fig, ax = plt.subplots(figsize=(8, 8))
     extra_space = 1.25
@@ -149,52 +110,36 @@ def animate_particles(particles_file, events_file, output_file=None, show_animat
     
     time_text = ax.text(-board_diameter * 1.1/2 , board_diameter * 1.1/2 , 'Time: 0.00, Event: 0', fontsize=12)
 
-    initial_particles = []
-    for p in particles:
-        initial_particles.append(p.copy())
+    total_frames = len(events_data) + (len(events_data)- 1)* (min_frames_per_event-1)
     
-    if events_data:
-        total_simulation_time = float(events_data[-1]['time'])
-    else:
-        total_simulation_time = 10.0  
-    
-    min_total_frames = len(events_data) * min_frames_per_event
-    
-    # checking if this works
-    fps_based_frames = int(total_simulation_time * fps) + 1
-    
-    total_frames = max(fps_based_frames, min_total_frames)
-    
-    if total_frames > 1:
-        time_per_frame = total_simulation_time / (total_frames - 1)
-    else:
-        time_per_frame = 0.01 
-    
-    frame_times = [i * time_per_frame for i in range(total_frames)]
+    frame_times = []
+    for i in range(min_frames_per_event):
+        frame_times.append(i * (events_data[0]['time'] / min_frames_per_event ))
+
+    for index in range(len(events_data) - 1):
+        current_event = events_data[index]['time']
+        next_event = events_data[index+1]['time']
+        delta_time = (next_event - current_event) / min_frames_per_event 
+        for i in range(min_frames_per_event):
+            frame_times.append(current_event + delta_time * i)
+
+    frame_times.append(events_data[-1]['time'])
     
     event_timestamps = [float(event_group['time']) for event_group in events_data]
     
-    def reset_particles():
-        for i, p in enumerate(particles):
-            for key, value in initial_particles[i].items():
-                p[key] = value
-    
     def update_particle_velocities(event):
-        if event['type'] == 'particle':
-            for p in particles:
-                if p['id'] == event['particle1_id']:
-                    p['vx'] = event['vx1']
-                    p['vy'] = event['vy1']
-                elif p['id'] == event['particle2_id']:
-                    p['vx'] = event['vx2']
-                    p['vy'] = event['vy2']
-        else:  
-            for p in particles:
-                if p['id'] == event['particle_id']:
-                    p['vx'] = event['vx']
-                    p['vy'] = event['vy']
+        for p in particles:
+            if p['id'] == event['particle_id']:
+                p['vx'] = event['vx']
+                p['vy'] = event['vy']
     
-    def update_particle_positions(time_delta):
+    def update_particle_positions(event):
+        for p in particles:
+            if p['id'] == event['particle_id']:
+                p['x'] = event['x']
+                p['y'] = event['y']
+
+    def update_particle_positions_between_events(time_delta):
         for p in particles:
             p['x'] += p['vx'] * time_delta
             p['y'] += p['vy'] * time_delta
@@ -202,40 +147,31 @@ def animate_particles(particles_file, events_file, output_file=None, show_animat
     def update(frame):
         current_time = frame_times[frame]
         
-        last_event_index = -1
-        for i, event_time in enumerate(event_timestamps):
-            if event_time <= current_time:
-                last_event_index = i
-            else:
-                break
-        
-        # Reset particles to initial state and replay all events up to the current time
-        reset_particles()
-        
-        # Apply all events up to last_event_index
-        if last_event_index >= 0:
-            for i in range(last_event_index + 1):
-                event_group = events_data[i]
-                event_time = float(event_group['time'])
-                
-                for event in event_group['events']:
+        is_in_between = True
+        collitions = 0
+        for index, event_time in enumerate(event_timestamps):
+            if current_time == event_time:
+                for event in events_data[index]['events']:
                     update_particle_velocities(event)
-                
-                # If this isn't the last event we're applying, move particles to the next event time
-                if i < last_event_index:
-                    next_event_group = events_data[i + 1]
-                    next_event_time = float(next_event_group['time'])
-                    time_delta = next_event_time - event_time
-                    update_particle_positions(time_delta)
-                else:
-                    # For the last event group, move particles forward to the current frame time
-                    time_delta = current_time - event_time
-                    update_particle_positions(time_delta)
+                    update_particle_positions(event)
+                    is_in_between = False
+
+            if current_time > event_time:
+                collitions = index 
+                break
+
+        if is_in_between:
+            if frame > 1:
+                time_delta = frame_times[frame] - frame_times[frame-1] 
+            else:
+                time_delta = frame_times[1]
         
-        for i, (particle, circle) in enumerate(zip(particles, particle_circles)):
+            update_particle_positions_between_events(time_delta)
+
+        for (particle, circle) in zip(particles, particle_circles):
             circle.center = (particle['x'], particle['y'])
         
-        time_text.set_text(f'Time: {current_time:.6f}, Event: {last_event_index + 1}')
+        time_text.set_text(f'Time: {current_time:.6f}, Collitions: {collitions}')
         
         return particle_circles + [time_text]
     
@@ -261,18 +197,9 @@ def animate_particles(particles_file, events_file, output_file=None, show_animat
 if __name__ == "__main__":
     os.makedirs('animations', exist_ok=True)
 
-    if len(sys.argv) > 1:
-        particles_file_path = sys.argv[1]
-    else:
-        particles_file_path = "output.txt"
-
-    #print(f"L = {board_diameter}, R = {obstacle_radius}")
-    #for particle in particles:
-    #    print(f"{particle}\n")
-
-    #events = read_simulation_events("events.txt")
+    #events = read_simulation_events("output.txt")
     #for event in events:
     #    print(event)
     
-    animate_particles('particles.txt', 'events.txt', 'animation.gif', True)
+    animate_particles('particles.txt', 'output.txt', 'animation.gif', True)
 
