@@ -38,4 +38,25 @@ public class Vector2D {
     public double distance(Vector2D other){
         return Math.sqrt(Math.pow(x-other.x, 2) + Math.pow(y-other.y, 2));
     }
+
+    public Vector2D normalize() {
+        double mag = Math.sqrt(x * x + y * y);
+        return new Vector2D(x / mag, y / mag);
+    }
+
+    public double dot(Vector2D other) {
+        return this.x * other.x + this.y * other.y;
+    }
+
+    public Vector2D scale(double scalar) {
+        return new Vector2D(this.x * scalar, this.y * scalar);
+    }
+
+    public Vector2D subtract(Vector2D other) {
+        return new Vector2D(this.x - other.x, this.y - other.y);
+    }
+
+    public Vector2D add(Vector2D other) {
+        return new Vector2D(this.x + other.x, this.y + other.y);
+    }
 }

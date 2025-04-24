@@ -46,6 +46,12 @@ public class Particle {
         return radius;
     }
 
+    public void update(double deltaTime){
+        double newX = position.getX() + velocity.getX() * deltaTime;
+        double newY = position.getY() + velocity.getY() * deltaTime;
+        this.position = new Vector2D(newX, newY);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
@@ -60,6 +66,42 @@ public class Particle {
 
     public boolean isOverlapped(Particle other){
         return position.distance(other.position) <= (radius + other.radius);
+    }
+
+
+    public void bounceOffWall() {
+        Vector2D normal = position.normalize();
+        double dot = velocity.dot(normal);
+        this.velocity = velocity.subtract(normal.scale(2 * dot));
+    }
+
+    public void bounceOffObstacle() {
+        Vector2D normal = position.normalize();
+        double dot = velocity.dot(normal);
+        this.velocity = velocity.subtract(normal.scale(2 * dot));
+    }
+
+    public void bounceOffParticle(Particle other){
+        Vector2D deltaX = this.position.subtract(other.position);
+        Vector2D deltaV = this.velocity.subtract(other.velocity);
+        double distanceSquared = deltaX.dot(deltaX);
+
+        if (distanceSquared == 0) return;
+
+        double dotProduct = deltaV.dot(deltaX);
+        if (dotProduct >= 0) return;
+
+        double m1 = this.mass;
+        double m2 = other.mass;
+
+        double factor1 = (2 * m2 / (m1 + m2)) * (dotProduct / distanceSquared);
+        Vector2D newVel1 = this.velocity.subtract(deltaX.scale(factor1));
+
+        double factor2 = (2 * m1 / (m1 + m2)) * (-dotProduct / distanceSquared);
+        Vector2D newVel2 = other.velocity.add(deltaX.scale(factor2));
+
+        this.velocity = newVel1;
+        other.velocity = newVel2;
     }
 
     @Override
