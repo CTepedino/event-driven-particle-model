@@ -1,4 +1,5 @@
 import math
+import sys
 
 def read_particles_file(particles_file):
     """Reads particles.txt and extracts particle data."""
@@ -25,11 +26,14 @@ def read_output_file(output_file):
     events = []
     i = 0
     while i < len(lines):
-        if lines[i].strip().replace('.', '', 1).isdigit():  # Time line
-            time = float(lines[i].strip())
+        # Check if the line is a time line (a float value)
+        try:
+            time = float(lines[i].strip())  # Parse the time
             i += 1
             particle_states = []
-            while lines[i].strip() and not lines[i].strip().isdigit():
+            
+            # Read particle states until we hit the collision count
+            while i < len(lines) and len(lines[i].strip().split()) >= 5:
                 parts = lines[i].strip().split()
                 particle_states.append({
                     'id': int(parts[0]),
@@ -37,27 +41,34 @@ def read_output_file(output_file):
                     'vy': float(parts[4])
                 })
                 i += 1
-            collision_count = int(lines[i].strip())
+            
+            # Read collision count
+            collision_count = int(lines[i].strip())  # The collision count is directly written as a number
             i += 1
             collisions = []
+            
+            # Read collision details
             for _ in range(collision_count):
                 collisions.append(lines[i].strip().split())
                 i += 1
+            
+            # Append the event
             events.append({'time': time, 'particle_states': particle_states, 'collisions': collisions})
-        else:
+        except ValueError:
+            # Skip invalid lines that cannot be parsed as time
             i += 1
     
     return events
 
 def calculate_pressure(events, particles, board_diameter, obstacle_radius):
-    """Calculates pressure on walls and obstacle over time."""
+    """Calculates pressure on walls and obstacle over time, ignoring particle-particle collisions."""
     wall_circumference = math.pi * board_diameter  # Circumference of the circular container
     obstacle_circumference = 2 * math.pi * obstacle_radius
     pressures_wall = []
     pressures_obstacle = []
     times = []
     
-    for i in range(1, len(events)):
+    for i in range(1, len(events)):  # Start from the second event to calculate delta_t
         event = events[i]
         prev_event = events[i - 1]
         delta_t = event['time'] - prev_event['time']
@@ -67,6 +78,11 @@ def calculate_pressure(events, particles, board_diameter, obstacle_radius):
         for collision in event['collisions']:
             particle_id = int(collision[0])
             collision_type = collision[1]
+            
+            # Ignore particle-particle collisions
+            if collision_type not in ['W', 'O']:
+                continue
+            
             particle = particles[particle_id]
             mass = particle['mass']
             
@@ -87,9 +103,10 @@ def calculate_pressure(events, particles, board_diameter, obstacle_radius):
         pressure_wall = impulse_wall / (delta_t * wall_circumference) if delta_t > 0 else 0
         pressure_obstacle = impulse_obstacle / (delta_t * obstacle_circumference) if delta_t > 0 else 0
         
+        # Append pressures and time for this event
         pressures_wall.append(pressure_wall)
         pressures_obstacle.append(pressure_obstacle)
-        times.append(event['time'])
+        times.append(event['time'])  # Append the current time
     
     return times, pressures_wall, pressures_obstacle
 
@@ -100,8 +117,16 @@ def write_pressure_to_file(times, pressures, filename):
             f.write(f"{time} {pressure}\n")
 
 if __name__ == "__main__":
-    particles_file = "particles.txt"
-    output_file = "output.txt"
+    # Default file names
+    default_particles_file = "particles.txt"
+    default_output_file = "output.txt"
+    
+    # Use command-line arguments if provided, otherwise use defaults
+    particles_file = sys.argv[1] if len(sys.argv) > 1 else default_particles_file
+    output_file = sys.argv[2] if len(sys.argv) > 2 else default_output_file
+    
+    print(f"Using particles file: {particles_file}")
+    print(f"Using output file: {output_file}")
     
     board_diameter, obstacle_radius, particles = read_particles_file(particles_file)
     events = read_output_file(output_file)
