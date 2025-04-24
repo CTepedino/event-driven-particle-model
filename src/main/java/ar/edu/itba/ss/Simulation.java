@@ -32,7 +32,7 @@ public class Simulation {
             maxCollisions = Optional.of(Long.parseLong(System.getProperty(MAX_COLLISIONS)));
         }
 
-        simulation.execute(maxTime, maxCollisions);
+        simulation.execute(maxTime, maxCollisions, "output.txt");
     }
 
     public Simulation(String particleFileName){
@@ -75,14 +75,24 @@ public class Simulation {
         return new Board(boardDiameter, obstacleRadius, particles);
     }
 
-    public void execute(Optional<Long> maxTime, Optional<Long> maxCollisions){
+    public void execute(Optional<Long> maxTime, Optional<Long> maxCollisions, String outFileName){
         double time = 0;
         long collisions = 0;
-        try (PrintWriter writer = new PrintWriter(new FileWriter("events.txt"))) {
+
+        try {
+            PrintWriter writer = new PrintWriter(new FileWriter(outFileName));
+
+
             while ((maxTime.isEmpty() || maxTime.get() > time) && (maxCollisions.isEmpty() || maxCollisions.get() > collisions)) {
-                time = board.toNextCollisionTime(time, writer);
+                writer.println(time);
+                writer.print(board);
+
+                time = board.toNextCollisionTime(time);
                 collisions++;
             }
+
+            writer.close();
+
         } catch (Exception e){
             throw new RuntimeException(e.getMessage());
         }

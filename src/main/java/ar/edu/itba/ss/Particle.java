@@ -107,14 +107,12 @@ public class Particle {
 
     @Override
     public String toString() {
-        return String.format(Locale.US,"%d %f %f %f %f %f %f",
+        return String.format(Locale.US,"%d %f %f %f %f",
             id,
             position.getX(),
             position.getY(),
             velocity.getX(),
-            velocity.getY(),
-            mass,
-            radius
+            velocity.getY()
         );
     }
 }
