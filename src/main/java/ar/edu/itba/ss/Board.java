@@ -137,7 +137,7 @@ public class Board {
         double soonestCollisionTime = soonestPerParticle.stream().filter(Objects::nonNull).mapToDouble(Collision::getTime).min().orElse(0);
 
         if (soonestCollisionTime == 0) {
-            return 0;
+            throw new RuntimeException("No more collisions. This should not happen");
         }
 
         for (Particle particle: particles){
@@ -185,7 +185,7 @@ public class Board {
     public String toString(){
         StringBuilder strb = new StringBuilder();
         for (Particle particle: particles){
-            strb.append(particle).append('\n');
+            strb.append(particle.positionalInfo()).append('\n');
         }
 
         return strb.toString();
