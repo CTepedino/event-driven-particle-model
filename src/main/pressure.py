@@ -1,6 +1,7 @@
 import math
 import sys
 import matplotlib.pyplot as plt  # Importing matplotlib for plotting
+from matplotlib.ticker import ScalarFormatter
 
 def read_particles_file(particles_file):
     """Reads particles.txt and extracts particle data."""
@@ -169,6 +170,11 @@ def plot_pressure(times, pressures, ylabel):
     plt.xlabel("Tiempo (s)")  # Label for the x-axis
     plt.ylabel(f"{ylabel} (N/m)")  # Label for the y-axis
     plt.grid()
+    ax = plt.gca()
+    ax.ticklabel_format(style='sci', axis='y', scilimits=(0,0))  # Forzar notación científica
+    ax.yaxis.set_major_formatter(ScalarFormatter(useMathText=True))  # Usar MathText para que muestre 10^x
+
+    plt.tight_layout()
     plt.show()  # Display the plot in a window
 
 if __name__ == "__main__":
@@ -186,9 +192,12 @@ if __name__ == "__main__":
     board_diameter, obstacle_radius, particles = read_particles_file(particles_file)
     events = read_output_file(output_file)
     times, pressures_wall, pressures_obstacle = calculate_pressure(events, particles, board_diameter, obstacle_radius)
+
+    write_pressure_to_file(times, pressures_wall, "wall_pressure_v3.txt")
+    write_pressure_to_file(times, pressures_obstacle, "obstacle_pressure_v3.txt")
     
     # Define the smoothing interval (e.g., 0.01 seconds)
-    smoothing_interval = 0.25
+    smoothing_interval = 0.01
     
     # Smooth the pressures
     smoothed_times_wall, smoothed_pressures_wall = smooth_pressure(times, pressures_wall, smoothing_interval)
