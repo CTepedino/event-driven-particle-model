@@ -83,10 +83,19 @@ public class Particle {
     }
 
     public void bounceOffParticle(Particle other){
+
         double sigma = radius + other.getRadius();
         Vector2D deltaR = position.subtract(other.position);
         Vector2D deltaV = velocity.subtract(other.velocity);
-        
+        double deltaV_deltaR = deltaV.dot(deltaR);
+
+        double J = 2 * mass * other.mass * deltaV_deltaR /(((mass) + other.mass) * sigma);
+        double Jx = J * deltaR.getX() / sigma;
+        double Jy = J * deltaR.getY() / sigma;
+
+        velocity = new Vector2D(velocity.getX()  - Jx/mass, velocity.getY() - Jy/mass);
+        other.velocity = new Vector2D(other.velocity.getX() + Jx/mass, other.velocity.getY() + Jy/mass);
+
     }
 
     @Override
