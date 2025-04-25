@@ -71,6 +71,7 @@ public class Particle {
 
 
     public void bounceOffWall() {
+
         Vector2D normal = position.normalize();
         double dot = velocity.getX() * normal.getX() + velocity.getY() * normal.getY();
         this.velocity = new Vector2D(
