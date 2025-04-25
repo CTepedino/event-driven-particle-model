@@ -69,22 +69,22 @@ public class ParticleGenerator {
             throw new RuntimeException(e.getMessage());
         }
     }
-    private Vector2D randomPosition(double rInt, double rExt){
+    private Vector2D randomPosition(double rInt, double rExt, double radius){
         boolean isOutsideLimits = true;
         double randomX = 0;
         double randomY = 0;
         while (isOutsideLimits) {
             randomX = (Math.pow(-1, random.nextBoolean() ? 0 : 1)) * (rInt + (Math.random() * (rExt - rInt)));
             randomY = (Math.pow(-1, random.nextBoolean() ? 0 : 1)) * (rInt + (Math.random() * (rExt - rInt)));
-            isOutsideLimits = !isPointInRing(randomX, randomY, rInt, rExt);
+            isOutsideLimits = !isPointInRing(randomX, randomY, rInt, rExt, radius);
         }
         return new Vector2D(randomX, randomY);
     }
 
-    private boolean isPointInRing(double x, double y, double innerRadius, double outerRadius) {
+    private boolean isPointInRing(double x, double y, double innerRadius, double outerRadius, double radius) {
         double distanceSquared = x*x + y*y;
-        return distanceSquared >= innerRadius * innerRadius &&
-                distanceSquared <= outerRadius * outerRadius;
+        return distanceSquared >= (innerRadius+radius) * (innerRadius+radius) &&
+                distanceSquared <= (outerRadius-radius) * (outerRadius-radius);
     }
 
     private Vector2D randomVelocity(double speed){
@@ -96,7 +96,7 @@ public class ParticleGenerator {
 
         for (int id = 0; id < count; id++){
             while(true){
-                Particle candidate = new Particle(id, randomPosition(circleMin, circleMax), null, mass, radius);
+                Particle candidate = new Particle(id, randomPosition(circleMin, circleMax, radius), null, mass, radius);
 
                 if (particles.stream().noneMatch(p -> p.isOverlapped(candidate))){
                     candidate.setVelocity(randomVelocity(speed));
