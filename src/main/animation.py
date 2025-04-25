@@ -1,8 +1,14 @@
 import os
 
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.animation as animation
+
+
+
 
 if __name__ == "__main__":
     os.makedirs('animations', exist_ok=True)
@@ -82,13 +88,19 @@ if __name__ == "__main__":
 
         return particle_patches
 
-    ani = animation.FuncAnimation(
-        fig, update, frames=len(snapshots), interval=50, blit=True
-    )
-
     ax.set_aspect('equal')
     ax.set_xlim(-boardRadius, boardRadius)
     ax.set_ylim(-boardRadius, boardRadius)
-    plt.show()
+    ax.set_yticks([])
+    ax.set_xticks([])
+
+    ani = animation.FuncAnimation(
+        fig, update, frames=len(snapshots), interval=1, blit=True
+    )
+
+    output_path = os.path.join('animations', 'animation.mp4')
+    writer = animation.FFMpegWriter(fps=30, bitrate=1800)
+
+    ani.save(output_path, writer=writer)
 
 
