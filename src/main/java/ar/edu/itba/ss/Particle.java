@@ -72,14 +72,20 @@ public class Particle {
 
     public void bounceOffWall() {
         Vector2D normal = position.normalize();
-        double dot = velocity.dot(normal);
-        this.velocity = velocity.subtract(normal.scale(2 * dot));
+        double dot = velocity.getX() * normal.getX() + velocity.getY() * normal.getY();
+        this.velocity = new Vector2D(
+                velocity.getX() - 2 * dot * normal.getX(),
+                velocity.getY() - 2 * dot * normal.getY()
+        );
     }
 
     public void bounceOffObstacle() {
         Vector2D normal = position.normalize();
-        double dot = velocity.dot(normal);
-        this.velocity = velocity.subtract(normal.scale(2 * dot));
+        double dot = velocity.getX() * normal.getX() + velocity.getY() * normal.getY();
+        this.velocity = new Vector2D(
+                velocity.getX() - 2 * dot * normal.getX(),
+                velocity.getY() - 2 * dot * normal.getY()
+        );
     }
 
     public void bounceOffParticle(Particle other){
