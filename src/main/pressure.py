@@ -1,5 +1,6 @@
 import math
 import sys
+import matplotlib.pyplot as plt  # Importing matplotlib for plotting
 
 def read_particles_file(particles_file):
     """Reads particles.txt and extracts particle data."""
@@ -129,6 +130,47 @@ def write_pressure_to_file(times, pressures, filename):
         for time, pressure in zip(times, pressures):
             f.write(f"{time} {pressure}\n")
 
+def smooth_pressure(times, pressures, interval):
+    """Smooths the pressure data by averaging over larger time intervals."""
+    smoothed_times = []
+    smoothed_pressures = []
+    
+    start_time = times[0]
+    end_time = start_time + interval
+    current_pressures = []
+    
+    for time, pressure in zip(times, pressures):
+        if time <= end_time:
+            current_pressures.append(pressure)
+        else:
+            # Calculate the average pressure for the current interval
+            if current_pressures:
+                avg_pressure = sum(current_pressures) / len(current_pressures)
+                smoothed_times.append((start_time + end_time) / 2)  # Midpoint of the interval
+                smoothed_pressures.append(avg_pressure)
+            
+            # Move to the next interval
+            start_time = end_time
+            end_time = start_time + interval
+            current_pressures = [pressure]
+    
+    # Handle the last interval
+    if current_pressures:
+        avg_pressure = sum(current_pressures) / len(current_pressures)
+        smoothed_times.append((start_time + end_time) / 2)
+        smoothed_pressures.append(avg_pressure)
+    
+    return smoothed_times, smoothed_pressures
+
+def plot_pressure(times, pressures, ylabel):
+    """Plots a single pressure graph and displays it."""
+    plt.figure(figsize=(10, 6))
+    plt.plot(times, pressures, label=ylabel)
+    plt.xlabel("Tiempo (s)")  # Label for the x-axis
+    plt.ylabel(f"{ylabel} (N/m)")  # Label for the y-axis
+    plt.grid()
+    plt.show()  # Display the plot in a window
+
 if __name__ == "__main__":
     # Default file names
     default_particles_file = "particles.txt"
@@ -145,6 +187,13 @@ if __name__ == "__main__":
     events = read_output_file(output_file)
     times, pressures_wall, pressures_obstacle = calculate_pressure(events, particles, board_diameter, obstacle_radius)
     
-    # Write pressures to separate files
-    write_pressure_to_file(times, pressures_wall, "wall_pressure.txt")
-    write_pressure_to_file(times, pressures_obstacle, "obstacle_pressure.txt")
+    # Define the smoothing interval (e.g., 0.01 seconds)
+    smoothing_interval = 0.25
+    
+    # Smooth the pressures
+    smoothed_times_wall, smoothed_pressures_wall = smooth_pressure(times, pressures_wall, smoothing_interval)
+    smoothed_times_obstacle, smoothed_pressures_obstacle = smooth_pressure(times, pressures_obstacle, smoothing_interval)
+    
+    # Plot smoothed pressures
+    plot_pressure(smoothed_times_wall, smoothed_pressures_wall, "Presión en las paredes")
+    plot_pressure(smoothed_times_obstacle, smoothed_pressures_obstacle, "Presión en el obstáculo")
