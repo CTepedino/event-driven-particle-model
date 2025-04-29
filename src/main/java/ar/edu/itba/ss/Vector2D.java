@@ -6,13 +6,18 @@ public class Vector2D {
     private final double x;
     private final double y;
 
-    public Vector2D(double x, double y){
+    private double magnitude = -1;
+
+    public Vector2D(double x, double y) {
         this.x = x;
         this.y = y;
     }
 
     public static Vector2D fromPolar(double magnitude, double angle){
-        return new Vector2D(magnitude * Math.cos(angle), magnitude * Math.sin(angle));
+        return new Vector2D(
+                magnitude * Math.cos(angle),
+                magnitude * Math.sin(angle)
+        );
     }
 
     public double getX() {
@@ -26,8 +31,8 @@ public class Vector2D {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        Vector2D point2D = (Vector2D) o;
-        return Double.compare(x, point2D.x) == 0 && Double.compare(y, point2D.y) == 0;
+        Vector2D vector2D = (Vector2D) o;
+        return Double.compare(x, vector2D.x) == 0 && Double.compare(y, vector2D.y) == 0;
     }
 
     @Override
@@ -35,32 +40,49 @@ public class Vector2D {
         return Objects.hash(x, y);
     }
 
+    @Override
+    public String toString() {
+        return "(" + x + ", " + y + ")";
+    }
+
     public double distance(Vector2D other){
-        return Math.sqrt(Math.pow(x-other.x, 2) + Math.pow(y-other.y, 2));
-    }
-
-    public Vector2D normalize() {
-        double mag = Math.sqrt(x * x + y * y);
-        return new Vector2D(x / mag, y / mag);
-    }
-
-    public double dot(Vector2D other) {
-        return this.x * other.x + this.y * other.y;
-    }
-
-    public Vector2D scale(double scalar) {
-        return new Vector2D(this.x * scalar, this.y * scalar);
-    }
-
-    public Vector2D subtract(Vector2D other) {
-        return new Vector2D(this.x - other.x, this.y - other.y);
-    }
-
-    public Vector2D add(Vector2D other) {
-        return new Vector2D(this.x + other.x, this.y + other.y);
+        double x_diff = x-other.x;
+        double y_diff = y-other.y;
+        return Math.sqrt(x_diff * x_diff + y_diff * y_diff);
     }
 
     public double magnitude(){
-        return Math.sqrt(x*x + y*y);
+        if (magnitude == -1){
+            magnitude = Math.sqrt(x*x + y*y);
+        }
+        return magnitude;
+    }
+
+    public Vector2D add(Vector2D other){
+        return new Vector2D(x + other.x, y + other.y);
+    }
+
+    public Vector2D subtract(Vector2D other){
+        return new Vector2D(x - other.x, y - other.y);
+    }
+
+    public Vector2D scale(double scalar){
+        return new Vector2D(scalar * x, scalar * y);
+    }
+
+    public double dotProduct(Vector2D other){
+        return x * other.x + y * other.y;
+    }
+
+    public Vector2D normalized(){
+        double mag = magnitude();
+        if (mag == 0){
+            throw new RuntimeException("Cannot normalize a 0 vector");
+        }
+        return scale(1/mag);
+    }
+
+    public double angle(){
+        return Math.atan2(y, x);
     }
 }

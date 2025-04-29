@@ -2,54 +2,45 @@ package ar.edu.itba.ss;
 
 import java.io.BufferedReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Predicate;
+import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
 public class Simulation {
     private static final String MAX_TIME = "maxTime";
     private static final String MAX_COLLISIONS = "maxCollisions";
-    private static final String PRINT_COLLISIONS = "printCollisions";
 
     private final Board board;
-    private final boolean printCollisions;
+
+    public Simulation(String particleFileName){
+        board = parseParticlesFile(particleFileName);
+    }
 
     public static void main(String[] args){
+        Simulation simulation = new Simulation(args[0]);
 
-        boolean printCollisions = false;
-        if (System.getProperty(PRINT_COLLISIONS) != null){
-            printCollisions = Boolean.parseBoolean(System.getProperty(PRINT_COLLISIONS));
-        }
+        Optional<Long> maxTime = System.getProperty(MAX_TIME) == null? Optional.empty() :
+                Optional.of(Long.parseLong(System.getProperty(MAX_TIME)));
 
-        Simulation simulation = new Simulation(args[0], printCollisions);
-
-        Optional<Long> maxTime = Optional.empty();
-        if (System.getProperty(MAX_TIME) != null){
-            maxTime = Optional.of(Long.parseLong(System.getProperty(MAX_TIME)));
-        }
-
-        Optional<Long> maxCollisions = Optional.empty();
-        if (System.getProperty(MAX_COLLISIONS) != null){
-            maxCollisions = Optional.of(Long.parseLong(System.getProperty(MAX_COLLISIONS)));
-        }
+        Optional<Long> maxCollisions = System.getProperty(MAX_COLLISIONS) == null? Optional.empty() :
+                Optional.of(Long.parseLong(System.getProperty(MAX_COLLISIONS)));
 
         String outPath = "output.txt";
         if (args.length > 2){
             outPath = args[1];
         }
 
-        simulation.execute(maxTime, maxCollisions, outPath);
-    }
+        BiPredicate<Double, Long> cutCondition = (time, collisions) ->
+            (maxTime.isEmpty() || maxTime.get() > time)
+            && (maxCollisions.isEmpty() || maxCollisions.get() > collisions);
 
-    public Simulation(String particleFileName, boolean printCollisions){
-        board = parseParticlesFile(particleFileName);
-        this.printCollisions = printCollisions;
+        simulation.execute(cutCondition, outPath);
     }
 
     /**
@@ -69,46 +60,43 @@ public class Simulation {
             obstacleRadius = Double.parseDouble(particlesReader.readLine());
             Stream<String> lines = particlesReader.lines();
             lines.forEach(line -> {
-                    String[] info = line.split("[\t ]+");
-                    particles.add( new Particle(
+                String[] info = line.split("[\t ]+");
+                particles.add(new Particle(
                         Long.parseLong(info[0]),
                         new Vector2D(Double.parseDouble(info[1]), Double.parseDouble(info[2])),
                         new Vector2D(Double.parseDouble(info[3]), Double.parseDouble(info[4])),
                         Double.parseDouble(info[5]),
                         Double.parseDouble(info[6])
-                    ));
+                ));
             });
-
-
-            lines.close();
-        } catch (Exception e){
-            throw new RuntimeException(e.getMessage());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
         return new Board(boardDiameter, obstacleRadius, particles);
     }
 
-    public void execute(Optional<Long> maxTime, Optional<Long> maxCollisions, String outFileName){
+    public void execute(BiPredicate<Double, Long> cutCondition, String outFileName){
         double time = 0;
         long collisions = 0;
 
-        try {
-            PrintWriter writer = new PrintWriter(new FileWriter(outFileName));
+        try (PrintWriter writer = new PrintWriter(new FileWriter(outFileName))){
 
             writer.println(board.getParticles().size());
 
-            while ((maxTime.isEmpty() || maxTime.get() > time) && (maxCollisions.isEmpty() || maxCollisions.get() > collisions)) {
+            while (cutCondition.test(time, collisions)) {
                 writer.println(time);
                 writer.print(board);
 
-                time = board.toNextCollisionTime(time, writer, printCollisions);
-                collisions++;
+                Collision collision = board.toNextState();
+                writer.println(collision);
+
+                time = board.getTime();
+                collisions = board.getCollisions();
             }
 
-            writer.close();
-
         } catch (Exception e){
-            throw new RuntimeException(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 }

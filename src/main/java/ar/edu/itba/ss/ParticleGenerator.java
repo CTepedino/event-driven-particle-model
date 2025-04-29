@@ -74,8 +74,8 @@ public class ParticleGenerator {
         double randomX = 0;
         double randomY = 0;
         while (isOutsideLimits) {
-            randomX = (Math.pow(-1, random.nextBoolean() ? 0 : 1)) * (rInt + (Math.random() * (rExt - rInt)));
-            randomY = (Math.pow(-1, random.nextBoolean() ? 0 : 1)) * (rInt + (Math.random() * (rExt - rInt)));
+            randomX = (Math.pow(-1, random.nextBoolean() ? 0 : 1)) * (random.nextDouble()*rExt);
+            randomY = (Math.pow(-1, random.nextBoolean() ? 0 : 1)) * (random.nextDouble()*rExt);
             isOutsideLimits = !isPointInRing(randomX, randomY, rInt, rExt, radius);
         }
         return new Vector2D(randomX, randomY);
