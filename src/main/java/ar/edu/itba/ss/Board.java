@@ -58,7 +58,7 @@ public class Board {
             }
 
             double obstacleTime = obstacleCollisionTime(particle);
-            if (obstacleTime > 0 && wallTime < soonestTime){
+            if (obstacleTime > 0 && obstacleTime < soonestTime){
                 candidate = Collision.withObstacle(particle, obstacleTime);
                 if (!candidate.equals(lastCollision)){
                     soonest = candidate;
@@ -99,7 +99,6 @@ public class Board {
         if (A < EPS) return -1;
         double disc = B*B - 4*A*C;
         if (disc < 0 && disc > -EPS) disc = 0;
-        if (disc > 0) return -1;
 
         double sqrtD = Math.sqrt(disc);
         double t1 = (-B + sqrtD) / (2*A);

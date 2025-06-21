@@ -16,6 +16,7 @@ public class Simulation {
     private static final String MAX_TIME = "maxTime";
     private static final String MAX_COLLISIONS = "maxCollisions";
 
+    private static final String PRINT_COLLISIONS = "printCollisions";
     private final Board board;
 
     public Simulation(String particleFileName){
@@ -79,6 +80,14 @@ public class Simulation {
     public void execute(BiPredicate<Double, Long> cutCondition, String outFileName){
         double time = 0;
         long collisions = 0;
+        Optional<Boolean> print = System.getProperty(PRINT_COLLISIONS) == null? Optional.empty() :
+                Optional.of(Boolean.parseBoolean(System.getProperty(PRINT_COLLISIONS)));
+
+        boolean printCollisions = true;
+        if (print.isPresent()) {
+            printCollisions = print.get();
+        }
+
 
         try (PrintWriter writer = new PrintWriter(new FileWriter(outFileName))){
 
@@ -89,7 +98,9 @@ public class Simulation {
                 writer.print(board);
 
                 Collision collision = board.toNextState();
-                writer.println(collision);
+                if (printCollisions) {
+                    writer.println(collision);
+                }
 
                 time = board.getTime();
                 collisions = board.getCollisions();
